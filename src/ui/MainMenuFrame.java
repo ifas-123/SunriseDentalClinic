@@ -1,17 +1,23 @@
 package ui;
 
+import model.User;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MainMenuFrame extends JFrame {
 
-    public MainMenuFrame() {
+    private final User loggedInUser;
+
+    public MainMenuFrame(User user) {
+
+        this.loggedInUser = user;
 
         setTitle(
                 "Sunrise Dental Clinic - Main Menu"
         );
 
-        setSize(500, 400);
+        setSize(500, 500);
 
         setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE
@@ -27,27 +33,24 @@ public class MainMenuFrame extends JFrame {
     private void createMainMenu() {
 
         JPanel panel =
-                new JPanel(
-                        new GridLayout(
-                                6,
-                                1,
-                                10,
-                                10
-                        )
-                );
+                new JPanel();
+
+        panel.setLayout(
+                new BoxLayout(
+                        panel,
+                        BoxLayout.Y_AXIS
+                )
+        );
 
         panel.setBorder(
                 BorderFactory.createEmptyBorder(
-                        30,
-                        50,
-                        30,
-                        50
+                        25, 50, 25, 50
                 )
         );
 
         JLabel titleLabel =
                 new JLabel(
-                        "Sunrise Dental Clinic Management System",
+                        "Sunrise Dental Clinic",
                         SwingConstants.CENTER
                 );
 
@@ -55,8 +58,37 @@ public class MainMenuFrame extends JFrame {
                 new Font(
                         "Arial",
                         Font.BOLD,
-                        18
+                        22
                 )
+        );
+
+        titleLabel.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        JLabel userLabel =
+                new JLabel(
+                        "Logged in as: "
+                                + loggedInUser.getUsername()
+                                + " ("
+                                + loggedInUser.getRole()
+                                + ")"
+                );
+
+        userLabel.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        panel.add(titleLabel);
+
+        panel.add(
+                Box.createVerticalStrut(10)
+        );
+
+        panel.add(userLabel);
+
+        panel.add(
+                Box.createVerticalStrut(25)
         );
 
         JButton registerButton =
@@ -80,11 +112,105 @@ public class MainMenuFrame extends JFrame {
         JButton exitButton =
                 new JButton("Exit");
 
-        panel.add(titleLabel);
+        JButton managerButton =
+                new JButton(
+                        "Manager - View All Appointments"
+                );
+
+        Dimension buttonSize =
+                new Dimension(
+                        300,
+                        40
+                );
+
+        registerButton.setMaximumSize(
+                buttonSize
+        );
+
+        searchButton.setMaximumSize(
+                buttonSize
+        );
+
+        billingButton.setMaximumSize(
+                buttonSize
+        );
+
+        helpButton.setMaximumSize(
+                buttonSize
+        );
+
+        exitButton.setMaximumSize(
+                buttonSize
+        );
+
+        managerButton.setMaximumSize(
+                buttonSize
+        );
+
+        registerButton.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        searchButton.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        billingButton.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        helpButton.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        exitButton.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        managerButton.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
         panel.add(registerButton);
+
+        panel.add(
+                Box.createVerticalStrut(10)
+        );
+
         panel.add(searchButton);
+
+        panel.add(
+                Box.createVerticalStrut(10)
+        );
+
         panel.add(billingButton);
+
+        // Manager-only function
+        if (loggedInUser.getRole().equals("MANAGER")) {
+
+            panel.add(
+                    Box.createVerticalStrut(10)
+            );
+
+            panel.add(managerButton);
+
+            managerButton.addActionListener(e -> {
+
+                new ManagerFrame()
+                        .setVisible(true);
+            });
+        }
+
+        panel.add(
+                Box.createVerticalStrut(10)
+        );
+
         panel.add(helpButton);
+
+        panel.add(
+                Box.createVerticalStrut(10)
+        );
+
         panel.add(exitButton);
 
         registerButton.addActionListener(e -> {
@@ -116,6 +242,8 @@ public class MainMenuFrame extends JFrame {
                             + "Search for an existing appointment.\n\n"
                             + "Calculate and Print Bill:\n"
                             + "Calculate and print the treatment bill.\n\n"
+                            + "Manager:\n"
+                            + "View all registered appointments.\n\n"
                             + "Exit:\n"
                             + "Close the application.",
                     "Help",
@@ -133,7 +261,8 @@ public class MainMenuFrame extends JFrame {
                             JOptionPane.YES_NO_OPTION
                     );
 
-            if (result == JOptionPane.YES_OPTION) {
+            if (result ==
+                    JOptionPane.YES_OPTION) {
 
                 System.exit(0);
             }

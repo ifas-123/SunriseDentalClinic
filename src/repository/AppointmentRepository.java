@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AppointmentRepository {
 
@@ -190,5 +192,68 @@ public class AppointmentRepository {
         }
 
         return -1;
+    }
+
+    public List<Appointment> getAllAppointments() {
+
+        List<Appointment> appointments =
+                new ArrayList<>();
+
+        String sql = """
+                SELECT *
+                FROM appointments
+                ORDER BY appointment_date,
+                         appointment_time
+                """;
+
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql);
+             ResultSet resultSet =
+                     statement.executeQuery()) {
+
+            while (resultSet.next()) {
+
+                Appointment appointment =
+                        new Appointment(
+                                resultSet.getInt(
+                                        "appointment_number"
+                                ),
+                                resultSet.getString(
+                                        "patient_name"
+                                ),
+                                resultSet.getString(
+                                        "address"
+                                ),
+                                resultSet.getString(
+                                        "contact_number"
+                                ),
+                                resultSet.getString(
+                                        "dentist_name"
+                                ),
+                                resultSet.getString(
+                                        "treatment_type"
+                                ),
+                                resultSet.getDate(
+                                        "appointment_date"
+                                ).toLocalDate(),
+                                resultSet.getTime(
+                                        "appointment_time"
+                                ).toLocalTime()
+                        );
+
+                appointments.add(appointment);
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Error retrieving appointments: "
+                            + e.getMessage()
+            );
+        }
+
+        return appointments;
     }
 }
