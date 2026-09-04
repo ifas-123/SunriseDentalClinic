@@ -33,6 +33,9 @@ public class MainMenuFrame extends JFrame {
 
         JButton registerButton =
                 new JButton("Register New Appointment");
+                registerButton.addActionListener(e -> {
+    new AppointmentFrame().setVisible(true);
+});        
 
         JButton searchButton =
                 new JButton("Display Appointment Details");
