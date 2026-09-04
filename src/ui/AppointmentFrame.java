@@ -1,7 +1,13 @@
 package ui;
 
+import model.Appointment;
+import repository.AppointmentRepository;
+
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 
 public class AppointmentFrame extends JFrame {
 
@@ -13,6 +19,9 @@ public class AppointmentFrame extends JFrame {
     private JComboBox<String> treatmentTypeComboBox;
     private JTextField appointmentDateField;
     private JTextField appointmentTimeField;
+
+    private final AppointmentRepository appointmentRepository =
+            new AppointmentRepository();
 
     public AppointmentFrame() {
 
@@ -68,7 +77,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(appointmentNumberField, gbc);
+        panel.add(
+                appointmentNumberField,
+                gbc
+        );
 
         // Patient Name
         gbc.gridx = 0;
@@ -83,7 +95,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(patientNameField, gbc);
+        panel.add(
+                patientNameField,
+                gbc
+        );
 
         // Address
         gbc.gridx = 0;
@@ -98,7 +113,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(addressField, gbc);
+        panel.add(
+                addressField,
+                gbc
+        );
 
         // Contact Number
         gbc.gridx = 0;
@@ -113,7 +131,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(contactNumberField, gbc);
+        panel.add(
+                contactNumberField,
+                gbc
+        );
 
         // Dentist
         gbc.gridx = 0;
@@ -128,7 +149,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(dentistNameField, gbc);
+        panel.add(
+                dentistNameField,
+                gbc
+        );
 
         // Treatment
         gbc.gridx = 0;
@@ -153,7 +177,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(treatmentTypeComboBox, gbc);
+        panel.add(
+                treatmentTypeComboBox,
+                gbc
+        );
 
         // Date
         gbc.gridx = 0;
@@ -172,7 +199,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(appointmentDateField, gbc);
+        panel.add(
+                appointmentDateField,
+                gbc
+        );
 
         // Time
         gbc.gridx = 0;
@@ -191,7 +221,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridx = 1;
 
-        panel.add(appointmentTimeField, gbc);
+        panel.add(
+                appointmentTimeField,
+                gbc
+        );
 
         // Register button
         JButton registerButton =
@@ -201,7 +234,10 @@ public class AppointmentFrame extends JFrame {
         gbc.gridy = 9;
         gbc.gridwidth = 2;
 
-        panel.add(registerButton, gbc);
+        panel.add(
+                registerButton,
+                gbc
+        );
 
         // Clear button
         JButton clearButton =
@@ -209,7 +245,10 @@ public class AppointmentFrame extends JFrame {
 
         gbc.gridy = 10;
 
-        panel.add(clearButton, gbc);
+        panel.add(
+                clearButton,
+                gbc
+        );
 
         registerButton.addActionListener(
                 e -> registerAppointment()
@@ -268,7 +307,8 @@ public class AppointmentFrame extends JFrame {
         }
 
         // Treatment validation
-        if (treatmentType.equals("Select Treatment")) {
+        if (treatmentType == null
+                || treatmentType.equals("Select Treatment")) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -306,45 +346,75 @@ public class AppointmentFrame extends JFrame {
             return;
         }
 
-        // Date validation
-        if (!appointmentDate.matches(
-                "\\d{4}-\\d{2}-\\d{2}")) {
+        // Date and time validation
+        try {
+
+            LocalDate date =
+                    LocalDate.parse(appointmentDate);
+
+            LocalTime time =
+                    LocalTime.parse(appointmentTime);
+
+            // Create Appointment object
+            Appointment appointment =
+                    new Appointment(
+                            Integer.parseInt(appointmentNumber),
+                            patientName,
+                            address,
+                            contactNumber,
+                            dentistName,
+                            treatmentType,
+                            date,
+                            time
+                    );
+
+            // Save to database
+            boolean saved =
+                    appointmentRepository.saveAppointment(
+                            appointment
+                    );
+
+            if (saved) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Appointment registered successfully.",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                clearForm();
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Unable to save the appointment.",
+                        "Database Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+
+        } catch (DateTimeParseException e) {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter the date in YYYY-MM-DD format.",
+                    "Invalid appointment date or time.\n"
+                            + "Use date format YYYY-MM-DD "
+                            + "and time format HH:MM.",
                     "Validation Error",
                     JOptionPane.ERROR_MESSAGE
             );
 
-            return;
-        }
-
-        // Time validation
-        if (!appointmentTime.matches(
-                "([01]\\d|2[0-3]):[0-5]\\d")) {
+        } catch (NumberFormatException e) {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter the time in HH:MM format.",
+                    "Invalid appointment number.",
                     "Validation Error",
                     JOptionPane.ERROR_MESSAGE
             );
-
-            return;
         }
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Appointment details validated successfully.\n\n"
-                        + "Appointment Number: " + appointmentNumber
-                        + "\nPatient: " + patientName
-                        + "\nTreatment: " + treatmentType
-                        + "\nDate: " + appointmentDate
-                        + "\nTime: " + appointmentTime,
-                "Appointment",
-                JOptionPane.INFORMATION_MESSAGE
-        );
     }
 
     private void clearForm() {
