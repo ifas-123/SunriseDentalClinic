@@ -1,0 +1,11 @@
+*.class
+out/
+build/
+target/
+
+.vscode/
+.idea/
+
+*.log
+
+.env
