@@ -16,16 +16,85 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: sunrise_dental_clinic
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
+
+      - name: Create database tables
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot sunrise_dental_clinic <<'EOF'
+
+          CREATE TABLE appointments (
+              appointment_number INT PRIMARY KEY,
+              patient_name VARCHAR(100) NOT NULL,
+              address VARCHAR(255) NOT NULL,
+              contact_number VARCHAR(30) NOT NULL,
+              dentist_name VARCHAR(100) NOT NULL,
+              treatment_type VARCHAR(100) NOT NULL,
+              appointment_date DATE NOT NULL,
+              appointment_time TIME NOT NULL
+          );
+
+          CREATE TABLE treatments (
+              treatment_id INT PRIMARY KEY AUTO_INCREMENT,
+              treatment_name VARCHAR(100) NOT NULL,
+              price DECIMAL(10,2) NOT NULL
+          );
+
+          INSERT INTO treatments
+          (treatment_name, price)
+          VALUES
+          ('Dental Cleaning', 5000.00),
+          ('Dental Filling', 7500.00),
+          ('Tooth Extraction', 10000.00),
+          ('Root Canal', 25000.00),
+          ('Dental Check-up', 3000.00);
+
+          INSERT INTO appointments
+          (
+              appointment_number,
+              patient_name,
+              address,
+              contact_number,
+              dentist_name,
+              treatment_type,
+              appointment_date,
+              appointment_time
+          )
+          VALUES
+          (
+              1001,
+              'Test Patient',
+              'Colombo',
+              '0712345678',
+              'Dr. Silva',
+              'Dental Cleaning',
+              '2026-09-10',
+              '10:30:00'
+          );
+
+          EOF
 
       - name: Compile application
         run: |
@@ -46,8 +115,14 @@ jobs:
 
       - name: Run JUnit tests
         run: |
-          java -jar \
-            lib/junit-platform-console-standalone-6.0.1.jar \
-            execute \
-            --class-path "out:test-out:lib/mysql-connector-j-9.7.0.jar" \
-            --select-class test.AppointmentTest
+            java \
+              -Ddb.host=127.0.0.1 \
+              -Ddb.port=3306 \
+              -Ddb.name=sunrise_dental_clinic \
+              -Ddb.user=root \
+              -Ddb.password=root \
+              -jar \
+              lib/junit-platform-console-standalone-6.0.1.jar \
+              execute \
+              --class-path "out:test-out:lib/mysql-connector-j-9.7.0.jar" \
+              --select-class test.AppointmentTest
