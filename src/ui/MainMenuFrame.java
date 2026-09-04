@@ -99,6 +99,12 @@ public class MainMenuFrame extends JFrame {
                     .setVisible(true);
         });
 
+        billingButton.addActionListener(e -> {
+
+            new BillingFrame()
+                    .setVisible(true);
+        });
+
         helpButton.addActionListener(e -> {
 
             JOptionPane.showMessageDialog(
@@ -109,7 +115,7 @@ public class MainMenuFrame extends JFrame {
                             + "Display Appointment Details:\n"
                             + "Search for an existing appointment.\n\n"
                             + "Calculate and Print Bill:\n"
-                            + "Calculate the treatment bill.\n\n"
+                            + "Calculate and print the treatment bill.\n\n"
                             + "Exit:\n"
                             + "Close the application.",
                     "Help",

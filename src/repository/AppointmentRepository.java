@@ -6,8 +6,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 public class AppointmentRepository {
 
@@ -154,5 +152,43 @@ public class AppointmentRepository {
         }
 
         return null;
+    }
+
+    public double getTreatmentPrice(
+            String treatmentName) {
+
+        String sql = """
+                SELECT price
+                FROM treatments
+                WHERE treatment_name = ?
+                """;
+
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
+
+            statement.setString(
+                    1,
+                    treatmentName
+            );
+
+            ResultSet resultSet =
+                    statement.executeQuery();
+
+            if (resultSet.next()) {
+
+                return resultSet.getDouble("price");
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Error retrieving treatment price: "
+                            + e.getMessage()
+            );
+        }
+
+        return -1;
     }
 }
